@@ -1,11 +1,13 @@
+
 pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "shashankshashank123/employee-management"
+        IMAGE_NAME = 'shashankshashank123/employee-management'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -14,7 +16,12 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %IMAGE_NAME%:latest .'
+                script {
+                    def timestamp = new Date().format('yyyy-MM-dd-HHmmss')
+                    env.IMAGE_TAG = timestamp
+                }
+
+                bat 'docker build -t %IMAGE_NAME%:%IMAGE_TAG% .'
             }
         }
 
@@ -22,7 +29,7 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
+                        credentialsId: 'docker-token',
                         usernameVariable: 'DOCKER_USERNAME',
                         passwordVariable: 'DOCKER_PASSWORD'
                     )
@@ -30,10 +37,25 @@ pipeline {
                     bat '''
                         echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
                         if errorlevel 1 exit /b 1
+
+                        docker push %IMAGE_NAME%:%IMAGE_TAG%
+                        if errorlevel 1 exit /b 1
+
+                        docker tag %IMAGE_NAME%:%IMAGE_TAG% %IMAGE_NAME%:latest
+                        if errorlevel 1 exit /b 1
+
                         docker push %IMAGE_NAME%:latest
+                        if errorlevel 1 exit /b 1
                     '''
                 }
             }
         }
+
+        stage('Verify Docker Image') {
+            steps {
+                bat 'docker images %IMAGE_NAME%'
+            }
+        }
     }
 }
+
