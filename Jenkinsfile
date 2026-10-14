@@ -1,13 +1,13 @@
-
+```groovy
 pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'shashankshashank123/employee-management'
+        DOCKERHUB_USER = 'geethask'
+        IMAGE_NAME = 'geethask/employee-management'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -16,46 +16,35 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    def timestamp = new Date().format('yyyy-MM-dd-HHmmss')
-                    env.IMAGE_TAG = timestamp
-                }
-
-                bat 'docker build -t %IMAGE_NAME%:%IMAGE_TAG% .'
+                bat 'docker build -t %IMAGE_NAME%:v1 .'
             }
         }
 
-        stage('Docker Hub Login and Push') {
+        stage('Login and Push to Docker Hub') {
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'docker-token',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
-                    bat '''
-                        echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
-                        if errorlevel 1 exit /b 1
-
-                        docker push %IMAGE_NAME%:%IMAGE_TAG%
-                        if errorlevel 1 exit /b 1
-
-                        docker tag %IMAGE_NAME%:%IMAGE_TAG% %IMAGE_NAME%:latest
-                        if errorlevel 1 exit /b 1
-
-                        docker push %IMAGE_NAME%:latest
-                        if errorlevel 1 exit /b 1
-                    '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-token',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASSWORD%'
+                    bat 'docker push %IMAGE_NAME%:v1'
+                    bat 'docker logout'
                 }
             }
         }
 
-        stage('Verify Docker Image') {
+        stage('Health Check') {
             steps {
-                bat 'docker images %IMAGE_NAME%'
+                bat 'docker image inspect %IMAGE_NAME%:v1'
             }
         }
     }
-}
 
+    post {
+        always {
+            echo 'Employee Management pipeline finished.'
+        }
+    }
+}
+```
