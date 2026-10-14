@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Management</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,21 +13,25 @@
             margin: 0;
             padding: 40px 20px;
         }
+
         .container {
-            max-width: 750px;
+            max-width: 850px;
             margin: auto;
             background: white;
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 15px #0001;
         }
+
         h1 { color: #173b68; }
+
         input, button {
+            width: 100%;
             padding: 11px;
-            margin: 5px 0;
+            margin: 6px 0;
             box-sizing: border-box;
         }
-        input { width: 100%; }
+
         button {
             background: #1769aa;
             color: white;
@@ -34,59 +39,73 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+
         th, td {
             border-bottom: 1px solid #ddd;
             padding: 12px;
             text-align: left;
         }
+
         th { background: #eaf1f8; }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>Employee Management</h1>
-        <p>Add and view your employees.</p>
+        <h1>Employee Management System</h1>
+        <p>Add and view employee details.</p>
 
-        <form action="/add" method="POST">
+        <form method="POST" action="/">
             <label for="name">Employee Name</label>
-            <input id="name" name="name"
+            <input id="name" type="text" name="name"
                    placeholder="Enter employee name" required>
 
             <label for="role">Job Role</label>
-            <input id="role" name="role"
+            <input id="role" type="text" name="role"
                    placeholder="Enter job role" required>
+
+            <label for="location">Location</label>
+            <input id="location" type="text" name="location"
+                   placeholder="Enter employee location" required>
 
             <button type="submit">Add Employee</button>
         </form>
 
         <h2>Employee List</h2>
+
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Job Role</th>
+                    <th>Role</th>
+                    <th>Location</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for employee in employees %}
                 <tr>
                     <td>{{ employee.id }}</td>
                     <td>{{ employee.name }}</td>
                     <td>{{ employee.role }}</td>
+                    <td>{{ employee.location }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="3">No employees added yet.</td>
+                    <td colspan="4">No employees added yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <p><a href="/health">Check application health</a></p>
     </div>
 </body>
 </html>
